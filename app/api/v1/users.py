@@ -28,6 +28,49 @@ async def list_users(
     return await service.list_users()
 
 
+@router.get("/me", response_model=UserResponse)
+async def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_me(
+    body: UpdateUserRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    service = UserService(db)
+
+    user = await service.update_me(
+        user=current_user,
+        full_name=body.full_name,
+        avatar_url=body.avatar_url,
+    )
+
+    return user
+
+
+@router.patch("/me/password")
+async def change_password(
+    body: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    service = UserService(db)
+
+    try:
+        await service.change_password(
+            user=current_user,
+            current_password=body.current_password,
+            new_password=body.new_password,
+        )
+        return {"message": "Password updated successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
     user_id: uuid.UUID,
@@ -77,44 +120,3 @@ async def delete_user(
 
 
 
-@router.get("/me", response_model=UserResponse)
-async def get_me(
-    current_user: User = Depends(get_current_user),
-):
-    return current_user
-
-
-@router.patch("/me", response_model=UserResponse)
-async def update_me(
-    body: UpdateUserRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    service = UserService(db)
-
-    user = await service.update_me(
-        user=current_user,
-        full_name=body.full_name,
-        avatar_url=body.avatar_url,
-    )
-
-    return user
-
-
-@router.patch("/me/password")
-async def change_password(
-    body: ChangePasswordRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    service = UserService(db)
-
-    try:
-        await service.change_password(
-            user=current_user,
-            current_password=body.current_password,
-            new_password=body.new_password,
-        )
-        return {"message": "Password updated successfully"}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
