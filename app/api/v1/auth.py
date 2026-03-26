@@ -31,7 +31,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
 
 @router.get("/admin-only")
 async def admin_only(
-    current_user = Depends(require_roles(Role.ADMIN))
+    current_user = Depends(require_roles(Role.ADMIN, Role.SUPER_ADMIN)),
 ):
     return {
         "message": "Welcome admin!",
