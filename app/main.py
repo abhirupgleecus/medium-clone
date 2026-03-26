@@ -8,12 +8,18 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
 from app.api.v1.posts import router as posts_router
 
+from app.startup import startup_tasks
+
 app = FastAPI(title="InkWell API")
 
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(posts_router, prefix="/api/v1")
 
+
+app.on_event("startup")
+async def on_startup():
+    await startup_tasks()
 
 @app.get("/health")
 async def health_check():
