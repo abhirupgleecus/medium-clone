@@ -8,6 +8,8 @@ from app.db.session import engine
 from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
 from app.api.v1.posts import router as posts_router
+from app.api.v1.contrib import router as contrib_router
+from app.api.v1.uploads import router as uploads_router
 
 from app.startup import startup_tasks
 
@@ -25,6 +27,8 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(posts_router, prefix="/api/v1")
+app.include_router(contrib_router, prefix="/api/v1")
+app.include_router(uploads_router, prefix="/api/v1")
 
 
 app.on_event("startup")

@@ -5,6 +5,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timezone
 
 from app.db.session import get_db
 from app.schemas.auth import (
@@ -15,8 +16,9 @@ from app.schemas.auth import (
     MessageResponse,
 )
 from app.services.auth_service import AuthService
+from app.services.verification_service import VerificationService
 from app.core.dependencies import get_current_user, require_roles
-from app.models.user import User, Role
+from app.models.user import User, Role, UserStatus
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -115,3 +117,36 @@ async def logout(
         return {"message": "Logged out successfully"}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
+    
+
+@router.get("/verify-email", response_model=MessageResponse)
+async def verify_email(
+    token: str,
+    db: AsyncSession = Depends(get_db),
+):
+    service = VerificationService(db)
+
+    db_token = await service.verify_token(token)
+
+    if not db_token:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired token",
+        )
+
+    user_repo = service.user_repo
+    user = await user_repo.get_by_id(db_token.user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Activate user
+    user.status = UserStatus.ACTIVE
+    user.email_verified_at = datetime.now(timezone.utc)
+
+    # Mark token used
+    db_token.used_at = datetime.now(timezone.utc)
+
+    await db.commit()
+
+    return {"message": "Email verified successfully"}

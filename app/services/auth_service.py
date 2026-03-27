@@ -12,9 +12,11 @@ from app.core.security import (
     create_access_token,
     generate_refresh_token,
 )
-from app.models.user import User
+from app.models.user import User, UserStatus
 from app.repositories.user_repository import UserRepository
 from app.repositories.refresh_token_repository import RefreshTokenRepository
+from app.services.verification_service import VerificationService
+from app.services.email_service import EmailService
 
 
 class AuthService:
@@ -34,9 +36,6 @@ class AuthService:
         password: str,
         full_name: str,
     ) -> User:
-        """
-        Register a new user.
-        """
 
         existing = await self.user_repo.get_by_email(email)
         if existing:
@@ -50,9 +49,19 @@ class AuthService:
             full_name=full_name,
         )
 
-        await self.db.commit()
-        return user
+        verification_service = VerificationService(self.db)
+        email_service = EmailService()
 
+        raw_token = await verification_service.create_token(user.id)
+
+        email_service.send_verification_email(
+            to_email=user.email,
+            token=raw_token,
+        )
+
+        await self.db.commit()
+
+        return user
     async def login(
         self,
         *,
@@ -72,6 +81,9 @@ class AuthService:
 
         if not verify_password(password, user.hashed_password):
             raise ValueError("Invalid credentials")
+        
+        if user.status != UserStatus.ACTIVE:
+            raise ValueError("User is not active")
 
         # Create tokens
         access_token = create_access_token(

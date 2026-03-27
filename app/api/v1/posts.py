@@ -30,6 +30,7 @@ async def create_post(
         title=body.title,
         content=body.content,
         tags=body.tags,
+        cover_image_url=body.cover_image_url,
     )
 
 
@@ -112,6 +113,7 @@ async def update_post(
             post_id=post_id,
             title=body.title,
             content=body.content,
+            cover_image_url=body.cover_image_url,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -8,12 +8,16 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.base import Base
+
 from app.models.user import User
 from app.models.refresh_token import RefreshToken  
 from app.models.post import Post
 from app.models.tag import Tag  
 from app.models.post_tag import PostTag  
 from app.models.post_like import PostLike 
+from app.models.email_verification_token import EmailVerificationToken
+from app.models.contribution_request import ContributionRequest
+
 
 # Import all models here (important later)
 # from app.models import *

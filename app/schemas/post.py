@@ -9,6 +9,7 @@ class CreatePostRequest(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     content: str
     tags: list[str] = []
+    cover_image_url: str | None
 
 
 class PostResponse(BaseModel):
@@ -19,6 +20,8 @@ class PostResponse(BaseModel):
     status: str
     published_at: datetime | None
     likes_count: int
+    cover_image_url: str | None
+    content_format: str
 
     class Config:
         from_attributes = True
@@ -26,3 +29,4 @@ class PostResponse(BaseModel):
 class UpdatePostRequest(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
     content: str | None = None
+    cover_image_url: str | None

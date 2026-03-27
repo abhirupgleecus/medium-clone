@@ -11,6 +11,7 @@ from app.repositories.post_repository import PostRepository
 from app.repositories.tag_repository import TagRepository
 from app.repositories.post_tag_repository import PostTagRepository
 from app.repositories.post_like_repository import PostLikeRepository
+from app.utils.html_sanitizer import sanitize_html
 
 
 class PostService:
@@ -32,12 +33,14 @@ class PostService:
         title: str,
         content: str,
         tags: list[str],
+        cover_image_url: str | None,
     ) -> Post:
-
+        clean_content = sanitize_html(content)
         post = await self.repo.create(
             author_id=user.id,
             title=title,
-            content=content,
+            content=clean_content,
+            cover_image_url=cover_image_url,
         )
 
         # 🔹 Normalize tags
@@ -120,6 +123,7 @@ class PostService:
         post_id: uuid.UUID,
         title: str | None,
         content: str | None,
+        cover_image_url: str | None,
     ) -> Post:
         post = await self.get_post(
             user=user,
@@ -134,7 +138,10 @@ class PostService:
             post.title = title
 
         if content is not None:
-            post.content = content
+            post.content = sanitize_html(content)
+
+        if cover_image_url is not None:
+            post.cover_image_url = cover_image_url
 
         await self.db.commit()
         return post

@@ -42,11 +42,13 @@ class PostRepository:
         author_id: uuid.UUID,
         title: str,
         content: str,
+        cover_image_url: str | None = None,
     ) -> Post:
         post = Post(
             author_id=author_id,
             title=title,
             content=content,
+            cover_image_url=cover_image_url,
         )
         self.db.add(post)
         await self.db.flush()

@@ -9,6 +9,23 @@ class Settings(BaseSettings):
     Application configuration loaded from environment variables.
     """
 
+    #Imagekit.io
+    IMAGEKIT_PUBLIC_KEY: str
+    IMAGEKIT_PRIVATE_KEY: str
+    IMAGEKIT_URL_ENDPOINT: str
+
+    # --- Email (SMTP) ---
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USERNAME: str
+    SMTP_PASSWORD: str
+    SMTP_FROM_EMAIL: str
+    SMTP_STARTTLS: bool = True
+
+    # --- Email Verification ---
+    EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 1
+    APP_PUBLIC_URL: str  
+
     # --- Core ---
     ENVIRONMENT: str = "development"
 
